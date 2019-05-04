@@ -24,7 +24,7 @@ int fps;
  
 int main(int ac, char ** av)
 {
-    int x, y, count;
+    //int x, y, count;
 
     if(ac < 8)
     {

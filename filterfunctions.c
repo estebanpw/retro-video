@@ -49,7 +49,8 @@ Fills a frame with input buffer
 
 int read_frame_into(unsigned char *** f1, int H, int W, FILE * pipein){
     
-    unsigned char buffer[H][W][3] = {0};
+    unsigned char buffer[H][W][3];
+    memset(buffer, 0, H*W*3);
 
     int count = fread(buffer, 1, H*W*3, pipein);
 
@@ -80,7 +81,8 @@ Writes a frame to the output
 
 int write_frame_to(unsigned char *** f1, int H, int W, FILE * pipeout){
     
-    unsigned char buffer[H][W][3] = {0};
+    unsigned char buffer[H][W][3];
+    memset(buffer, 0, H*W*3);
 
     int x, y;
     for(x=0; x<H; x++){
