@@ -90,6 +90,9 @@ int main(int ac, char ** av)
 
     // Returned errors
     int ret;
+
+    // To force a noise error band
+    int row_start = 0, have_band_noise = 0, band_height = 50, band_speed = 20;
      
     // Process video frames
     while(1)
@@ -120,20 +123,41 @@ int main(int ac, char ** av)
         // Write this frame to the output pipe
         //fwrite(frame, 1, H*W*3, pipeout);
 
+
+        
         copy_from_frame_to(frame, write_frame, H, W);
 
         // This adds the effect of distorted colors
         displace_color_of_frame(frame, write_frame, 4, 4, 0, H, W);
 
         // This reduces contrast by a factor f
-        reduce_contrast_of_frame(write_frame, frame, 0.5, H, W);
+        reduce_contrast_of_frame(write_frame, frame, H, W);
 
         // This adds noise to the frame from uniform *random* numbers
         add_uniform_noise_to_frame(frame, write_frame, H, W, 25);
 
         // This adds a white noise line
         add_horizontal_noise_line(frame, write_frame, H, W, 0.2, 10, 0.4);
+
+        // This adds the horizontal band of noise (repeated row)
+        if(have_band_noise == 0 && 0.01 > lgc())
+        {
+            have_band_noise = 1;
+            row_start = 0;
+        }
+
+        if(row_start < H && have_band_noise == 1)
+        {
+            add_band_noise_to_frame(write_frame, frame, H, W, row_start, band_height);
+            copy_from_frame_to(frame, write_frame, H, W);
+            row_start += band_speed;
+        }
+        else
+        {
+            have_band_noise = 0;
+        }
         
+      
         // Write frame to output pipe
         write_frame_to(write_frame, H, W, pipeout);
 

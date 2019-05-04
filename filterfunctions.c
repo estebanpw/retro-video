@@ -189,13 +189,12 @@ Moves by an x and y offset the pixels corresponding to a given color
 
 @frame     frame to edit
 @write_f    frame to save results
-@factor strength of contrast reduction from 0 to 1
 @H      height of the frame
 @W      width of the frame
 
 */
 
-void reduce_contrast_of_frame(unsigned char *** frame, unsigned char *** write_frame, float factor, int H, int W){
+void reduce_contrast_of_frame(unsigned char *** frame, unsigned char *** write_frame, int H, int W){
 
     int y, x;
     for (y=0 ; y<H ; ++y) for (x=0 ; x<W ; ++x)
@@ -252,6 +251,8 @@ void add_horizontal_noise_line(unsigned char *** frame, unsigned char *** write_
     if(rate < lgc()) return;
 
     int r = MAX(MIN((lgc()) * H, H-5), 5);
+
+    copy_from_frame_to(frame, write_frame, H, W);
     
     //int l_fade = 10;
     //float fade_chance = 0.2;
@@ -287,7 +288,52 @@ void add_horizontal_noise_line(unsigned char *** frame, unsigned char *** write_
     }
 }
 
-void retro_effects_all_in_one(unsigned char *** frame, unsigned char *** write_frame, int H, int W, int xoffset, int yoffset, int color, float fade_chance, int length_fade, float rate){
+/*
+
+Add band noise to video
+
+@frame     frame to edit
+@write_f    frame to save results
+@H      height of the frame
+@W      width of the frame
+@row_st starting position in rows
+@band_h   height of the band
+
+*/
+
+void add_band_noise_to_frame(unsigned char *** frame, unsigned char *** write_frame, int H, int W, int row_start, int band_height){
+    
+    int y, x;
+    for (x=0 ; x<band_height; ++x)
+    {
+        if((row_start + x) == H) break;
+
+        for (y=0 ; y<W; ++y)
+        {
+            write_frame[row_start+x][y][0] = frame[row_start][y][0];
+            write_frame[row_start+x][y][1] = frame[row_start][y][1];
+            write_frame[row_start+x][y][2] = frame[row_start][y][2];
+
+        }
+    }
+}
+
+/*
+
+Combines all effects in one loop
+
+@frame     frame to edit
+@write_f    frame to save results
+@H      height of the frame
+@W      width of the frame
+@xoffset    the offset in the x coord [y][x]
+@yoffset    the offset in the y coord [y][x]
+@color  which color will be affected [0,1,2]
+@high   max value of noise to add per cell
+
+*/
+
+void retro_effects_all_in_one(unsigned char *** frame, unsigned char *** write_frame, int H, int W, int xoffset, int yoffset, int color, int high){
 
     // This adds the effect of distorted colors
     //displace_color_of_frame(frame, write_frame, 4, 4, 0, H, W);
@@ -298,31 +344,25 @@ void retro_effects_all_in_one(unsigned char *** frame, unsigned char *** write_f
     // This adds noise to the frame from uniform *random* numbers
     //add_uniform_noise_to_frame(frame, write_frame, H, W, 25);
 
-    // This adds a white noise line
-    //add_horizontal_noise_line(frame, write_frame, H, W, 0.2, 10, 0.4);
-
     int y, x;
     for (y=0 ; y<H ; ++y) for (x=0 ; x<W ; ++x)
     {
+        // Color displacement
         if(y+yoffset < H && y+yoffset >= 0 && x+xoffset < W && x+xoffset >= 0)
         {
             write_frame[y+yoffset][x+xoffset][color] = frame[y][x][color];
         }
 
+        // Contrast reduction
+        write_frame[y][x][0] = sqrt(write_frame[y][x][0]) * 16;
+        write_frame[y][x][1] = sqrt(write_frame[y][x][1]) * 16;
+        write_frame[y][x][2] = sqrt(write_frame[y][x][2]) * 16;
+
+        // Uniform noise
+        int r = (lgc() * high) - high/2;
+        write_frame[y][x][0] = MIN(MAX(write_frame[y][x][0] + r, 0), 255);
+        write_frame[y][x][1] = MIN(MAX(write_frame[y][x][1] + r, 0), 255);
+        write_frame[y][x][2] = MIN(MAX(write_frame[y][x][2] + r, 0), 255);
         
     }
 }
-
-
-/*
-void reduce_contrast_of_frame(unsigned char *** frame, unsigned char *** write_frame, float factor, int H, int W){
-
-    int y, x;
-    for (y=0 ; y<H ; ++y) for (x=0 ; x<W ; ++x)
-    {
-        write_frame[y][x][0] = sqrt(frame[y][x][0]) * 16;
-        write_frame[y][x][1] = sqrt(frame[y][x][1]) * 16;
-        write_frame[y][x][2] = sqrt(frame[y][x][2]) * 16;
-    }
-
-    */
