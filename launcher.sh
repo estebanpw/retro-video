@@ -21,20 +21,21 @@ echo "using date $DATE"
 
 INFO=$(cat info.log | grep "Stream")
 
-INFOVIDEO=$(echo "$INFO" | grep "Video")
-INFOAUDIO=$(echo "$INFO" | grep "Audio")
+INFOVIDEO=$(echo "$INFO" | grep "Video:")
+INFOAUDIO=$(echo "$INFO" | grep "Audio:")
 
-RESX=$(echo "$INFOVIDEO" | awk -F " " '{print $10}' | sed 's/x/ /g' | awk '{ print $1}')
-RESY=$(echo "$INFOVIDEO" | awk -F " " '{print $10}' | sed 's/x/ /g' | awk '{ print $2}')
-FPS=$(echo "$INFOVIDEO" | awk -F " " '{print $17}')
+RESX=$(echo "$INFOVIDEO" | awk -F "," '{print $3}' | awk '{print $1}' | sed 's/x/ /g' | awk '{ print $1}')
+RESY=$(echo "$INFOVIDEO" | awk -F "," '{print $3}' | awk '{print $1}' | sed 's/x/ /g' | awk '{ print $2}')
+FPS=$(echo "$INFOVIDEO" | awk -F "," '{print $5}' | awk '{print $1}')
 
-AUDIOCODEC=$(echo "$INFOAUDIO" | awk -F " " '{print $4}')
+AUDIOCODEC=$(echo "$INFOAUDIO" | awk -F " " '{print $4}' | sed 's/,//g')
 
 
 #echo "RESX: $RESX RESY: $RESY"
 #echo "AUDIOCODEC: $AUDIOCODEC"
 #echo "fps: $FPS"
 
+echo "Launching ./retro-video $VIDEO $RESX $RESY $FPS $RESULT $AUDIOCODEC $DATE"
 ./retro-video $VIDEO $RESX $RESY $FPS $RESULT $AUDIOCODEC $DATE
 
 rm info.log

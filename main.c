@@ -15,7 +15,6 @@
 // Video resolution
 int W;
 int H;
-int fps;
 
  
 // Allocate a buffer to store one frame
@@ -37,7 +36,8 @@ int main(int ac, char ** av)
     W = atoi(av[2]);
     H = atoi(av[3]);
 
-    fps = atoi(av[4]);
+    char fps[16]; fps[0] = '\0';
+    strcpy(fps, av[4]);
 
     char name[MAX_NAME];
     name[0] = '\0'; strcpy(name, av[1]);
@@ -53,7 +53,7 @@ int main(int ac, char ** av)
 
     int date = atoi(av[7]);
 
-    fprintf(stdout, "INFO: V-name: %s, wide: %d, height: %d, fps: %d, O-name: %s, A-codec: %s\n", name, W, H, fps, outname, audio_format);
+    fprintf(stdout, "INFO: V-name: %s, wide: %d, height: %d, fps: %s, O-name: %s, A-codec: %s\n", name, W, H, fps, outname, audio_format);
 
     // Build commands
 
@@ -65,10 +65,10 @@ int main(int ac, char ** av)
     char rm[MAX_COMMAND]; rm[0] = '\0';
 
     sprintf(comm_pipe_in, "ffmpeg -i %s -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -", name);
-    sprintf(comm_pipe_out, "ffmpeg -y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s %dx%d -r %d -i - -f mp4 -q:v 8 -vcodec mpeg4 %s.temp", W, H, fps, outname);
+    sprintf(comm_pipe_out, "ffmpeg -y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s %dx%d -r %s -i - -f mp4 -q:v 8 -vcodec mpeg4 %s.temp", W, H, fps, outname);
     sprintf(comm_text, "ffmpeg -y -i %s.temp -vf drawtext=\"fontfile=VCR_OSD_MONO_1.001.ttf: text='%%{pts\\:gmtime\\:%d}': fontcolor=white: fontsize=36: box=1: boxcolor=black@0.0: boxborderw=5: x=50: y=h-100\" -codec:a copy %s", outname, date, outname_temp);
     sprintf(comm_get_audio, "ffmpeg -y -i %s -vn -acodec copy %s.%s", name, name, audio_format);
-    sprintf(comm_write_audio, "ffmpeg -y -i %s -i %s.%s -shortest -c:v copy -c:a aac -b:a 256k %s", outname_temp, name, audio_format, outname);
+    sprintf(comm_write_audio, "ffmpeg -y -i %s -i %s.%s -shortest -c:v copy -c:a %s -b:a 256k %s", outname_temp, name, audio_format, audio_format, outname);
 
     
     // Allocate frame

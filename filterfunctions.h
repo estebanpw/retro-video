@@ -111,13 +111,12 @@ Moves by an x and y offset the pixels corresponding to a given color
 
 @frame     frame to edit
 @write_f    frame to save results
-@factor strength of contrast reduction from 0 to 1
 @H      height of the frame
 @W      width of the frame
 
 */
 
-void reduce_contrast_of_frame(unsigned char *** frame, unsigned char *** write_frame, float factor, int H, int W);
+void reduce_contrast_of_frame(unsigned char *** frame, unsigned char *** write_frame, int H, int W);
 
 /*
 
@@ -148,3 +147,35 @@ Add white horizontal noise line to video
 */
 
 void add_horizontal_noise_line(unsigned char *** frame, unsigned char *** write_frame, int H, int W, float fade_chance, int length_fade, float rate);
+
+/*
+
+Add band noise to video
+
+@frame     frame to edit
+@write_f    frame to save results
+@H      height of the frame
+@W      width of the frame
+@row_st starting position in rows
+@band_h   height of the band
+
+*/
+
+void add_band_noise_to_frame(unsigned char *** frame, unsigned char *** write_frame, int H, int W, int row_start, int band_height);
+
+/*
+
+Combines all effects in one loop [NOT GOOD RIGHT NOW]
+
+@frame     frame to edit
+@write_f    frame to save results
+@H      height of the frame
+@W      width of the frame
+@xoffset    the offset in the x coord [y][x]
+@yoffset    the offset in the y coord [y][x]
+@color  which color will be affected [0,1,2]
+@high   max value of noise to add per cell
+
+*/
+
+void retro_effects_all_in_one(unsigned char *** frame, unsigned char *** write_frame, int H, int W, int xoffset, int yoffset, int color, int high);
